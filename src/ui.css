@@ -1,0 +1,114 @@
+/* 悬浮按钮通用样式 */
+.button {
+    z-index: 2147483648;
+    position: fixed;
+    right: 1vw;
+    bottom: 5vh;
+}
+
+.floating-button {
+    position: absolute;
+    width: 100px;
+    height: 50px;
+    border-radius: 25px;
+    color: white;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 1000;
+    transition: all 0.3s ease;
+}
+
+.floating-button.translate-button {
+    bottom: 0px;
+    right: 0px;
+    background-color: #007BFF;
+}
+
+.floating-button.setting-button {
+    bottom: 60px;
+    right: 0px;
+    background-color: #007BFF;
+}
+
+.floating-button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+}
+
+/* 翻译按钮状态颜色 */
+.translate {
+    background-color: #007BFF;
+}
+
+/* 开始翻译 */
+.translating {
+    background-color: #FF8800;
+}
+
+/* 翻译中 */
+.cancel {
+    background-color: #DC3545;
+}
+
+/* 撤销翻译 */
+
+/* 状态文本 */
+.floating-button[data-state="translate"]::after {
+    content: "开始翻译";
+}
+
+.floating-button[data-state="translating"]::after {
+    content: "翻译中";
+}
+
+.floating-button[data-state="cancel"]::after {
+    content: "撤销翻译";
+}
+
+/* 状态切换动画 */
+@keyframes translateToTranslating {
+    0% {
+        background-color: #007BFF;
+    }
+
+    100% {
+        background-color: #FF8800;
+    }
+}
+
+@keyframes translatingToCancel {
+    0% {
+        background-color: #FF8800;
+    }
+
+    100% {
+        background-color: #DC3545;
+    }
+}
+
+.floating-button.start-translate {
+    animation: translateToTranslating 3s forwards;
+}
+
+.floating-button.start-translating {
+    animation: translatingToCancel 3s forwards;
+}
+
+.container.mt-4 {
+    top: 10vh;
+    position: fixed;
+    width: 33.3vw;
+    right: 1vw;
+    z-index: 2147483648;
+}
+
+.card-body {
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
