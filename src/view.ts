@@ -76,7 +76,8 @@ const language = new Map([
 
 const apiName = new Map([
     ["baidu", "百度翻译"],
-    ["youdao", "有道文本翻译"]
+    ["youdao", "有道文本翻译"],
+    ["youdaoAI", "有道大模型翻译"]
 ])
 
 function applySettings(): void {
@@ -157,6 +158,7 @@ async function languageListInit() {
 async function APIListInit() {
     const $translator = $("#translator-api")
     const curTranslator = GerneralConfig.GetCurTranslator()!
+    console.log(APIConfig.keys())
     for (const a of APIConfig.keys()){
         if(a == curTranslator) {
             $translator.append(`<option value="${a}" selected>${apiName.get(a)}</option>`)

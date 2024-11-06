@@ -10,6 +10,10 @@ export default defineConfig({
         icon: 'https://vitejs.dev/logo.svg',
         namespace: 'npm/vite-plugin-monkey',
         match: ['https://pkg.go.dev/*'],
+        connect: [
+          "fanyi-api.baidu.com",
+          "openapi.youdao.com",
+        ],
       },
     }),
   ],

@@ -49,5 +49,12 @@ export const APIConfig = new Map([
         "computers",
         [Language.Auto, Language.SimplifiedChinese, Language.TraditionalChinese, Language.English],
         [Language.SimplifiedChinese, Language.TraditionalChinese, Language.English]
+    )],
+    ["youdaoAI", new API("youdaoAI", "https://openapi.youdao.com/llm_trans", 
+        "9",
+        [Language.Auto, Language.SimplifiedChinese, Language.English],
+        [Language.SimplifiedChinese, Language.English]
     )]
 ])
+
+export const AIPrompt = "This is a piece of documentation text for a Golang package. Please help me translate it."
