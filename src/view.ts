@@ -219,13 +219,9 @@ async function settingUIInit() {
     keyInputInit()
     showCacheSize()
     const $selectAPI = $("#translator-api")
-    const $closeSetting = $(".btn-close")
     $selectAPI.on("change", updateLangList)
     $selectAPI.on("change", appidInputUpdate)
     $selectAPI.on("change", keyInputInit)
-    $closeSetting.on("click", () => $selectAPI.off("change", updateLangList))
-    $closeSetting.on("click", () => $selectAPI.off("change", appidInputUpdate))
-    $closeSetting.on("click", () => $selectAPI.off("change", keyInputInit))
 }
 
 export async function LoadView(): Promise<void> {
@@ -240,7 +236,7 @@ export async function LoadView(): Promise<void> {
         $settingBtn.on("click", toggleHoverBox);
         $btnPrimary.on("click", applySettings);
         $translateBtn.on("click", handleClick);
-        $settingBtn.on("click", settingUIInit)
+        $settingBtn.one("click", settingUIInit)
         $clearBtn.on("click", () => {
             ClearCache()
             showCacheSize()
