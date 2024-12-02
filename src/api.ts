@@ -174,16 +174,18 @@ export class BaiduTranlate extends translator {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-                onload: ({ status, response }) => {
-                    if (status !== 200) {
-                        ctx.Error(undefined, "Internet error", status);
-                    } else if (response.error_code) {
+                onload: ({ response }) => {
+                    if (response.error_code) {
                         ctx.Error(undefined, response.error_msg, response.error_code);
                     } else {
                         const translations = response.trans_result.map((res: any) => res.dst).join("\n");
                         ctx.Success(translations);
                     }
                     resolve(ctx);
+                },
+                onerror: ({ status }) => {
+                    ctx.Error(undefined, "Internet error", status);
+                    resolve(ctx)
                 }
             });
         });
@@ -262,18 +264,20 @@ export class YoudaoTextTranslate extends translator {
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
                 },
-                onload: ({ status, response }) => {
-                    if (status != 200) {
-                        ctx.Error(undefined, "Internet error", status)
-                        resolve(ctx)
-                    } else if (Number(response.errorCode)) {
+                onload: ({ response }) => {
+                    if (Number(response.errorCode)) {
                         ctx.Error(undefined, undefined, response.errorCode)
                         resolve(ctx)
                     } else {
                         ctx.Success(response.translation.join("\n"))
                         resolve(ctx)
                     }
+                },
+                onerror: ({status}) => {
+                    ctx.Error(undefined, "Internet error", status)
+                    resolve(ctx)
                 }
+                
             })
         })
     }
@@ -353,13 +357,8 @@ export class YoudaoAITraslate extends translator {
                 },
                 method: "POST",
                 data: data,
-                onload: ({ status, responseText }) => {
+                onload: ({responseText }) => {
                     let transText = ""
-                    if (status !== 200) {
-                        ctx.Error(undefined, "internet error", status)
-                        resolve(ctx)
-                        return
-                    }
                     const events = sseBodyParse(responseText)
                     if (events.length === 0) {
                         ctx.Error(undefined, "sse body error")
@@ -382,6 +381,14 @@ export class YoudaoAITraslate extends translator {
                         transText += data.transIncre
                     }
                     ctx.Success(transText)
+                    resolve(ctx)
+                },
+                onerror:({status})=>{
+                    ctx.Error(undefined, "Internet error", status)
+                    resolve(ctx)
+                },
+                onabort:()=>{
+                    ctx.Error(undefined, "Connection abort error")
                     resolve(ctx)
                 }
             })
