@@ -22,7 +22,12 @@ const $floatingUI = $(`
 
                     <div class="mb-3">
                         <label for="key" class="form-label">KEY</label>
-                        <input type="password" class="form-control" id="key" name="key">
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="key" name="key">
+                            <button class="btn btn-outline-secondary" type="button" id="toggleKeyVisibility">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -208,7 +213,8 @@ async function keyInputInit() {
 }
 
 async function showCacheSize() {
-    $("#cache-size").text("缓存大小:" + (GetSize() >> 10) + "KB")
+    const size = await GetSize();
+    $("#cache-size").text("缓存大小:" + (size >> 10) + "KB")
 }
 
 async function settingUIInit() {
@@ -218,10 +224,28 @@ async function settingUIInit() {
     appidInputInit()
     keyInputInit()
     showCacheSize()
+    setupKeyVisibilityToggle()
     const $selectAPI = $("#translator-api")
     $selectAPI.on("change", updateLangList)
     $selectAPI.on("change", appidInputUpdate)
     $selectAPI.on("change", keyInputInit)
+}
+
+function setupKeyVisibilityToggle() {
+    const $keyInput = $("#key");
+    const $toggleButton = $("#toggleKeyVisibility");
+    const $eyeIcon = $toggleButton.find("i");
+
+    $toggleButton.on("click", function() {
+        const currentType = $keyInput.attr("type");
+        if (currentType === "password") {
+            $keyInput.attr("type", "text");
+            $eyeIcon.removeClass("bi-eye").addClass("bi-eye-slash");
+        } else {
+            $keyInput.attr("type", "password");
+            $eyeIcon.removeClass("bi-eye-slash").addClass("bi-eye");
+        }
+    });
 }
 
 export async function LoadView(): Promise<void> {
@@ -237,9 +261,9 @@ export async function LoadView(): Promise<void> {
         $btnPrimary.on("click", applySettings);
         $translateBtn.on("click", handleClick);
         $settingBtn.one("click", settingUIInit)
-        $clearBtn.on("click", () => {
-            ClearCache()
-            showCacheSize()
+        $clearBtn.on("click", async () => {
+            await ClearCache()
+            await showCacheSize()
         }) 
     })
 }

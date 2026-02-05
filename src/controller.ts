@@ -50,10 +50,10 @@ export class Controller {
 
         for (const rule of this.rules) {
             for(const paragraph of rule.Paragraphs) {
-                const cache = GetTrans(paragraph.Oringinal)
+                const cache = await GetTrans(paragraph.Oringinal)
                 if(!paragraph.TransText && !cache) {
                     await this.apiTranlate(paragraph)
-                    SetTrans(paragraph.Oringinal, paragraph.TransText)
+                    await SetTrans(paragraph.Oringinal, paragraph.TransText!)
                 }else if (cache){
                     paragraph.TransText = cache
                 }
