@@ -3,7 +3,7 @@
   "private": true,
   "author": "inkOrCloud",
   "description": "针对pkg.go.dev文档的翻译脚本",
-  "version": "0.3.3",
+  "version": "0.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
