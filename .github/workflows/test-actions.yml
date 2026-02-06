@@ -1,0 +1,21 @@
+name: Test Actions
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Print debug info
+        run: |
+          echo "Workflow triggered on branch: ${{ github.ref }}"
+          echo "SHA: ${{ github.sha }}"
+          echo "Event: ${{ github.event_name }}"
+          echo "Runner OS: $(uname -a)"
+          echo "Package.json version: $(jq -r .version package.json 2>/dev/null || echo 'not found')"
