@@ -1,0 +1,19 @@
+name: Release Test
+
+on:
+  push:
+    branches:
+      - add-release-workflow
+    paths:
+      - 'package.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Print version
+        run: |
+          echo "Package.json version: $(cat package.json | jq -r .version)"
