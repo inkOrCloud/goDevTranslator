@@ -1,0 +1,99 @@
+name: Release on Version Change
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+
+jobs:
+  check-version-and-release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full history for git diff
+
+      - name: Get current version from package.json
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(jq -r .version package.json)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Get latest release tag
+        id: latest-release
+        run: |
+          # Fetch all tags
+          git fetch --tags
+          # Get the latest tag that matches v* (release tags)
+          LATEST_TAG=$(git tag --list 'v*' --sort=-v:refname | head -1)
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No existing release tag found"
+            echo "latest_tag=" >> $GITHUB_OUTPUT
+            echo "previous_version=" >> $GITHUB_OUTPUT
+          else
+            echo "Latest release tag: $LATEST_TAG"
+            echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+            # Get the version from the tag (strip 'v' prefix)
+            PREVIOUS_VERSION="${LATEST_TAG#v}"
+            echo "previous_version=$PREVIOUS_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check if version changed
+        id: version-check
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.current_version }}"
+          PREVIOUS_VERSION="${{ steps.latest-release.outputs.previous_version }}"
+          
+          if [ -z "$PREVIOUS_VERSION" ]; then
+            echo "No previous release found. Will create first release."
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "release_tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          elif [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+            echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+            echo "create_release=true" >> $GITHUB_OUTPUT
+            echo "release_tag=v$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          else
+            echo "Version unchanged ($CURRENT_VERSION). Skipping release."
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate changelog
+        if: steps.version-check.outputs.create_release == 'true'
+        id: changelog
+        run: |
+          PREVIOUS_TAG="${{ steps.latest-release.outputs.latest_tag }}"
+          RELEASE_TAG="${{ steps.version-check.outputs.release_tag }}"
+          
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # First release: include all commits
+            CHANGELOG=$(git log --oneline --format="- %s" | head -50)
+            echo "First release" > release_notes.md
+            echo "" >> release_notes.md
+            echo "$CHANGELOG" >> release_notes.md
+          else
+            # Compare from previous tag to current HEAD (excluding previous tag)
+            CHANGELOG=$(git log --oneline --format="- %s" "$PREVIOUS_TAG..HEAD")
+            echo "Changes since $PREVIOUS_TAG:" > release_notes.md
+            echo "" >> release_notes.md
+            echo "$CHANGELOG" >> release_notes.md
+          fi
+          
+          # Escape newlines for output
+          NOTES=$(cat release_notes.md | jq -Rs .)
+          echo "release_notes=$NOTES" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        if: steps.version-check.outputs.create_release == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version-check.outputs.release_tag }}
+          name: Release ${{ steps.version-check.outputs.release_tag }}
+          body: ${{ steps.changelog.outputs.release_notes }}
+          draft: false
+          prerelease: false
+          generate_release_notes: false
